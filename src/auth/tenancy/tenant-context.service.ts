@@ -2,15 +2,15 @@ import { AsyncLocalStorage } from 'async_hooks';
 import { Injectable } from '@nestjs/common';
 
 interface TenantContext {
-  accountId: string;
+  account_id: string;
 }
 
 @Injectable()
 export class TenantContextService {
   private readonly asyncLocalStorage = new AsyncLocalStorage<TenantContext>();
 
-  run(accountId: string, callback: () => void) {
-    this.asyncLocalStorage.run({ accountId }, callback);
+  run(account_id: string, callback: () => void) {
+    this.asyncLocalStorage.run({ account_id }, callback);
   }
 
   getContext(): TenantContext {

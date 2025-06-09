@@ -27,21 +27,19 @@ interface IUserCreate {
 
 @Injectable()
 export class UsersService {
-  private account_id: string;
   constructor(
     @InjectRepository(UserEntity)
     private readonly usersRepository: Repository<UserEntity>,
     private readonly tenantContext: TenantContextService,
-  ) {
-    this.account_id = this.tenantContext.getContext().accountId
-  }
+  ) { }
   async getUsers(query: GetUsersQuery) {
     const {
       role,
       isActive,
       showDeleted,
     } = query;
-    const where: any = {account_id: this.account_id};
+    const { account_id } = this.tenantContext.getContext();
+    const where: any = {account_id};
     if(!showDeleted) where.isDeleted = false;
     if (role) {
       if(role === Role.USER) where.roles = { $in: [Role.USER], $not: { $in: [Role.ADMIN] } };
@@ -89,9 +87,10 @@ export class UsersService {
     return await this.usersRepository.save(newUser);
   }
   activateUser(userId: string, body: UserRoleDTO) {
+    const { account_id } = this.tenantContext.getContext();
     const permissions = body.roles.includes(Role.ADMIN) ? AllAdminUserPermissionsKeys : RegularUserPermissionsKeys;
     return this.usersRepository.update(
-      { id: userId, account_id: this.account_id },
+      { id: userId, account_id },
       {
         isActive: true,
         roles: body.roles,
@@ -101,8 +100,9 @@ export class UsersService {
     );
   }
   editUser(userId: string, body: PutUserDTO) {
+    const { account_id } = this.tenantContext.getContext();
     return this.usersRepository.update(
-      { id: userId, account_id: this.account_id },
+      { id: userId, account_id },
       {
         name: body.name,
         email: body.email
@@ -110,25 +110,28 @@ export class UsersService {
     );
   }
   setAdmin(userId: string, body: IsAdminDTO) {
+    const { account_id } = this.tenantContext.getContext();
     const { isAdmin } = body;
     return this.usersRepository.update(
-      { id: userId, account_id: this.account_id },
+      { id: userId, account_id },
       {
         roles: isAdmin ? [Role.USER, Role.ADMIN] : [Role.USER],
       }
     );
   }
   editUserPermissions(userId: string, permissions: Permission[]) {
+    const { account_id } = this.tenantContext.getContext();
     return this.usersRepository.update(
-      { id: userId, account_id: this.account_id },
+      { id: userId, account_id },
       {
         permissions,
       }
     );
   }
   deleteUser(userId: string) {
+    const { account_id } = this.tenantContext.getContext();
     return this.usersRepository.update(
-      { id: userId, account_id: this.account_id },
+      { id: userId, account_id },
       {
         isActive: false,
         roles: [],
