@@ -1,6 +1,7 @@
 import { FindManyOptions, FindOptionsWhere } from "typeorm";
 import { CommonFiltersPaginated } from "../types/queries/baseQueries.query";
 import { DomainEntity } from "../entities/domain.entity";
+import { AccountDomainEntity } from "../entities/accountdomain.entity";
 
 type GetPaginatedQueryType<TQuery, TEntity> = {
   query: TQuery;
@@ -8,7 +9,7 @@ type GetPaginatedQueryType<TQuery, TEntity> = {
   otherWhereConditions?: FindOptionsWhere<TEntity>;
 }
 
-export const getPaginatedQuery = <TQuery extends CommonFiltersPaginated, TEntity extends DomainEntity>({
+export const getPaginatedQuery = <TQuery extends CommonFiltersPaginated, TEntity extends DomainEntity | AccountDomainEntity>({
   query,
   searchByArray,
   otherWhereConditions = {},

@@ -23,10 +23,9 @@ export class AuthService {
   async signUp(signUpDTO: SignUpDTO): Promise<{token: string}> {
     const { password } = signUpDTO;
     const existingAccount = await this.accountsService.getByEmail(signUpDTO.email);
-    const existingUser = await this.usersService.getByEmail(signUpDTO.email);
 
-    if (existingUser || existingAccount) {
-      throw new ConflictException('User with this email already exists');
+    if (existingAccount) {
+      throw new ConflictException('Account with this email already exists');
     }
 
     const newAccount = await this.accountsService.createAccount(signUpDTO);

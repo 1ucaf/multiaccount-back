@@ -9,6 +9,8 @@ import { UsersModule } from './users/users.module';
 import { AccountsModule } from './accounts/accounts.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { AccountEntity } from './accounts/entities/account.entity';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { TenantContextInterceptor } from './auth/tenancy/tenant-context.interceptor';
 
 @Module({
   imports: [
@@ -27,6 +29,11 @@ import { AccountEntity } from './accounts/entities/account.entity';
     PermissionsModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TenantContextInterceptor,
+    },
+  ],
 })
 export class AppModule { }

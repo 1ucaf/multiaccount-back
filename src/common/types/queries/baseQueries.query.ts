@@ -1,6 +1,10 @@
 import { Transform } from "class-transformer";
 import { IsInt, IsOptional, IsString, Min } from "class-validator";
-import { DateTransformer } from "src/lib/utils/date.transformer";
+import { DateTransformer } from "src/common/utils/date.transformer";
+
+export interface BaseQuery {
+  account_id?: string
+}
 
 export interface PaginationBaseQuery {
   page?: number;
@@ -16,7 +20,9 @@ export interface DatesBaseQuery {
   endDate?: Date;
 };
 
-export class CommonFiltersPaginated implements PaginationBaseQuery, SearchBaseQuery, DatesBaseQuery {
+export class CommonFiltersPaginated implements PaginationBaseQuery, SearchBaseQuery, DatesBaseQuery, BaseQuery {
+  account_id?: string;
+
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
   @IsInt()

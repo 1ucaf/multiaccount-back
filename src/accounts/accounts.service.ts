@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AccountEntity } from './entities/account.entity';
-import { getPaginatedQuery } from 'src/lib/utils/paginatedQuery';
+import { getPaginatedQuery } from 'src/common/utils/paginatedQuery';
 import { GetAccountsQuery } from './queries/getAccounts.query';
 import { SignUpDTO } from 'src/auth/dto/signup.dto';
 

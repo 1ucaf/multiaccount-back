@@ -8,11 +8,10 @@ import { SaveBookDTO } from './dto/saveBook.dto';
 import { GetBooksQuery } from './queries/getBooks.query';
 
 @Controller('books')
-@UseGuards(AuthGuard())
+@UseGuards(AuthGuard(), RolesGuard)
 export class BooksController {
   constructor(private booksService: BooksService) {}
   @Get()
-  @UseGuards(AuthGuard(), RolesGuard)
   @Roles(Role.USER)
   getBooks(@Query() query: GetBooksQuery) {
     return this.booksService.getBooks(query);

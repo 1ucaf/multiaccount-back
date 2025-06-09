@@ -1,4 +1,4 @@
-import { DomainEntity } from "src/lib/entities/domain.entity";
+import { DomainEntity } from "src/common/entities/domain.entity";
 import { Column, Entity } from "typeorm";
 
 @Entity('account')

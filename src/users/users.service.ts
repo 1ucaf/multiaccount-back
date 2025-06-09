@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './entities/user.entity';
 import { Repository } from 'typeorm';
-import { getPaginatedQuery } from 'src/lib/utils/paginatedQuery';
+import { getPaginatedQuery } from 'src/common/utils/paginatedQuery';
 import { GetUsersQuery } from './queries/getUsers.query';
 import { Role } from 'src/auth/enums/role.enum';
 import { UserRoleDTO } from './dto/userRole.dto';
@@ -13,6 +13,7 @@ import {
   RegularUserPermissionsKeys
 } from 'src/permissions/dictionary/permissions.dictionary';
 import { IsAdminDTO } from './dto/IsAdmin.dto';
+import { TenantContextService } from 'src/auth/tenancy/tenant-context.service';
 
 interface IUserCreate {
   name: string;
@@ -26,17 +27,21 @@ interface IUserCreate {
 
 @Injectable()
 export class UsersService {
+  private account_id: string;
   constructor(
     @InjectRepository(UserEntity)
     private readonly usersRepository: Repository<UserEntity>,
-  ) {}
+    private readonly tenantContext: TenantContextService,
+  ) {
+    this.account_id = this.tenantContext.getContext().accountId
+  }
   async getUsers(query: GetUsersQuery) {
     const {
       role,
       isActive,
       showDeleted,
     } = query;
-    const where: any = {};
+    const where: any = {account_id: this.account_id};
     if(!showDeleted) where.isDeleted = false;
     if (role) {
       if(role === Role.USER) where.roles = { $in: [Role.USER], $not: { $in: [Role.ADMIN] } };
@@ -69,6 +74,11 @@ export class UsersService {
     });
   }
   async createUser(user: IUserCreate) {
+    const existingUserWithinAccount = await this.usersRepository.findOne({ where: { email: user.email, account_id: user.account_id } });
+
+    if (existingUserWithinAccount) {
+      throw new ConflictException('User with this email already exists');
+    }
     
     const newUser: UserEntity = await this.usersRepository.create({
       ...user,
@@ -81,7 +91,7 @@ export class UsersService {
   activateUser(userId: string, body: UserRoleDTO) {
     const permissions = body.roles.includes(Role.ADMIN) ? AllAdminUserPermissionsKeys : RegularUserPermissionsKeys;
     return this.usersRepository.update(
-      { id: userId },
+      { id: userId, account_id: this.account_id },
       {
         isActive: true,
         roles: body.roles,
@@ -92,7 +102,7 @@ export class UsersService {
   }
   editUser(userId: string, body: PutUserDTO) {
     return this.usersRepository.update(
-      { id: userId },
+      { id: userId, account_id: this.account_id },
       {
         name: body.name,
         email: body.email
@@ -102,7 +112,7 @@ export class UsersService {
   setAdmin(userId: string, body: IsAdminDTO) {
     const { isAdmin } = body;
     return this.usersRepository.update(
-      { id: userId },
+      { id: userId, account_id: this.account_id },
       {
         roles: isAdmin ? [Role.USER, Role.ADMIN] : [Role.USER],
       }
@@ -110,7 +120,7 @@ export class UsersService {
   }
   editUserPermissions(userId: string, permissions: Permission[]) {
     return this.usersRepository.update(
-      { id: userId },
+      { id: userId, account_id: this.account_id },
       {
         permissions,
       }
@@ -118,7 +128,7 @@ export class UsersService {
   }
   deleteUser(userId: string) {
     return this.usersRepository.update(
-      { id: userId },
+      { id: userId, account_id: this.account_id },
       {
         isActive: false,
         roles: [],
