@@ -37,7 +37,7 @@ export class AuthService {
       password: hashedPassword,
       account_id: newAccount.id,
       isActive: true,
-      roles: [Role.ADMIN, Role.OWNER],
+      roles: [Role.ADMIN, Role.OWNER, Role.USER],
       permissions: AllAdminUserPermissionsKeys,
     })
 
