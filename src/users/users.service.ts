@@ -164,4 +164,14 @@ export class UsersService {
       }
     );
   }
+  updatePassword(userId: string, password: string) {
+    const { account_id } = this.tenantContext.getContext();
+    return this.usersRepository.update(
+      { id: userId, account_id },
+      {
+        password: password,
+        isActive: true,
+      }
+    );
+  }
 }

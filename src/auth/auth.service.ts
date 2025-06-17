@@ -12,13 +12,16 @@ import { UsersService } from 'src/users/users.service';
 import { AccountsService } from 'src/accounts/accounts.service';
 import { Role } from './enums/role.enum';
 import { AllAdminUserPermissionsKeys } from 'src/permissions/dictionary/permissions.dictionary';
+import { TenantContextService } from './tenancy/tenant-context.service';
+import { ChangePasswordDTO } from './dto/changepassword.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly accountsService: AccountsService,
     private readonly usersService: UsersService,
-    private jwtService: JwtService
+    private jwtService: JwtService,
+    private readonly tenantContext: TenantContextService,
   ) {}
   async signUp(signUpDTO: SignUpDTO): Promise<{token: string}> {
     const { password } = signUpDTO;
@@ -46,8 +49,8 @@ export class AuthService {
     return { token };
   }
 
-  async login(signUpDTO: LoginDTO): Promise<{token: string}> {
-    const { email, password } = signUpDTO;
+  async login(loginDTO: LoginDTO): Promise<{token: string}> {
+    const { email, password } = loginDTO;
 
     const existingUser = await this.usersService.getByEmail(email);
 
@@ -67,5 +70,22 @@ export class AuthService {
     const token = this.jwtService.sign({ id: existingUser.id });
 
     return { token };
+  }
+
+  async changePassword(changePasswordDTO: ChangePasswordDTO) {
+    const { current_password, new_password } = changePasswordDTO;
+    const { user } = this.tenantContext.getContext();
+    const isPasswordValid = await bcrypt.compare(
+      current_password,
+      user.password
+    );
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Current password is incorrect.');
+    }
+
+    const hashedPassword = await bcrypt.hash(new_password, 10);
+
+    await this.usersService.updatePassword(user.id, hashedPassword);
   }
 }

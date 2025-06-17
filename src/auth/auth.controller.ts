@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { SignUpDTO } from './dto/signup.dto';
 import { LoginDTO } from './dto/login.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { ChangePasswordDTO } from './dto/changepassword.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -19,5 +20,10 @@ export class AuthController {
   @Post('login')
   async login(@Body() loginDTO: LoginDTO): Promise<{token: string}> {
     return this.authService.login(loginDTO);
+  }
+  @Post('change-password')
+  @UseGuards(AuthGuard())
+  async changePassword(@Body() changePasswordDTO: ChangePasswordDTO) {
+    return this.authService.changePassword(changePasswordDTO);
   }
 }
