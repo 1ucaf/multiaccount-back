@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Permissions } from 'src/auth/decorators/permissions.decorator';
@@ -11,6 +11,7 @@ import { PutUserDTO } from './dto/putUser.dto';
 import { Permission } from 'src/permissions/dictionary/permissions.dictionary';
 import { PermissionsGuard } from 'src/auth/guards/permissions.guard';
 import { IsAdminDTO } from './dto/IsAdmin.dto';
+import { PostUserDTO } from './dto/postUser.dto';
 
 @Controller('users')
 @UseGuards(AuthGuard(), RolesGuard, PermissionsGuard)
@@ -25,6 +26,11 @@ export class UsersController {
   @Patch('/activate/:id')
   activateUser(@Param('id') id: string, @Body() body: UserRoleDTO) {
     return this.usersService.activateUser(id, body);
+  }
+  @Post()
+  @Permissions(Permission.USERS_CREATE)
+  createUser(@Body() user: PostUserDTO) {
+    return this.usersService.postUser(user);
   }
   @Put(':id')
   @Permissions(Permission.USERS_EDIT)

@@ -14,6 +14,8 @@ import {
 } from 'src/permissions/dictionary/permissions.dictionary';
 import { IsAdminDTO } from './dto/IsAdmin.dto';
 import { TenantContextService } from 'src/auth/tenancy/tenant-context.service';
+import { PostUserDTO } from './dto/postUser.dto';
+import * as bcrypt from 'bcryptjs';
 
 interface IUserCreate {
   name: string;
@@ -71,8 +73,30 @@ export class UsersService {
       where: { email }
     });
   }
+  async postUser(user: PostUserDTO) {
+    const { account_id } = this.tenantContext.getContext();
+    const existingUserWithinAccount = await this.usersRepository.findOne({
+      where: { email: user.email, account_id }
+    });
+
+    if (existingUserWithinAccount) {
+      throw new ConflictException('User with this email already exists');
+    }
+    const hashedPassword = await bcrypt.hash(user.password, 10);
+    const newUser: UserEntity = await this.usersRepository.create({
+      ...user,
+      password: hashedPassword,
+      isDeleted: false,
+      account_id,
+      roles: [Role.USER],
+      permissions: RegularUserPermissionsKeys,
+    });
+    return await this.usersRepository.save(newUser);
+  }
   async createUser(user: IUserCreate) {
-    const existingUserWithinAccount = await this.usersRepository.findOne({ where: { email: user.email, account_id: user.account_id } });
+    const existingUserWithinAccount = await this.usersRepository.findOne({
+      where: { email: user.email, account_id: user.account_id }
+    });
 
     if (existingUserWithinAccount) {
       throw new ConflictException('User with this email already exists');

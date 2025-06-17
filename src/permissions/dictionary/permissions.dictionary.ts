@@ -3,6 +3,7 @@ export enum Permission {
   ACCOUNTS_EDIT = 'accounts.edit',
   ACCOUNTS_DELETE = 'accounts.delete',
   USERS_GET = 'users.get',
+  USERS_CREATE = 'users.create',
   USERS_EDIT = 'users.edit',
   USERS_DELETE = 'users.delete',
   USERS_SET_ADMIN = 'users.set_admin',
