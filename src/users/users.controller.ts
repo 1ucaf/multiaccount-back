@@ -52,4 +52,9 @@ export class UsersController {
   deleteUser(@Param('id') id: string) {
     return this.usersService.deleteUser(id);
   }
+  @Get('/account/:id')
+  @Roles(Role.MASTER)
+  getAccountUsers(@Query() query: GetUsersQuery, @Param('id') id: string) {
+    return this.usersService.getAccountUsers(query, id);
+  }
 }

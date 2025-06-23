@@ -35,33 +35,8 @@ export class UsersService {
     private readonly tenantContext: TenantContextService,
   ) { }
   async getUsers(query: GetUsersQuery) {
-    const {
-      role,
-      isActive,
-      showDeleted,
-    } = query;
     const { account_id } = this.tenantContext.getContext();
-    const where: any = {account_id};
-    if(!showDeleted) where.isDeleted = false;
-    if (role) {
-      if(role === Role.USER) where.roles = { $in: [Role.USER], $not: { $in: [Role.ADMIN] } };
-      else where.roles = { $in: [role] };
-    };
-    if(isActive !== undefined) where.isActive = isActive;
-    const findQuery = getPaginatedQuery<GetUsersQuery, UserEntity>({
-      query,
-      searchByArray: ['name', 'email'],
-      otherWhereConditions: where,
-    });
-    const [results, count] = await this.usersRepository.findAndCount(findQuery);
-    const totalPages = Math.ceil(count / query.pageSize);
-    return {
-      results,
-      count,
-      totalPages,
-      page: query.page,
-      pageSize: query.pageSize,
-    }
+    return await this.getAccountUsers(query, account_id);
   }
   getById(id: string) {
     return this.usersRepository.findOne({
@@ -173,5 +148,39 @@ export class UsersService {
         isActive: true,
       }
     );
+  }
+  async getOwnerByAccountId(accountId: string) {
+    return await this.usersRepository.findOne({
+      where: { account_id: accountId, roles: Role.OWNER },
+    });
+  }
+  
+  async getAccountUsers(query: GetUsersQuery, account_id: string) {
+    const {
+      role,
+      isActive,
+      showDeleted,
+    } = query;
+    const where: any = {account_id};
+    if(!showDeleted) where.isDeleted = false;
+    if (role) {
+      if(role === Role.USER) where.roles = { $in: [Role.USER], $not: { $in: [Role.ADMIN] } };
+      else where.roles = { $in: [role] };
+    };
+    if(isActive !== undefined) where.isActive = isActive;
+    const findQuery = getPaginatedQuery<GetUsersQuery, UserEntity>({
+      query,
+      searchByArray: ['name', 'email'],
+      otherWhereConditions: where,
+    });
+    const [results, count] = await this.usersRepository.findAndCount(findQuery);
+    const totalPages = Math.ceil(count / query.pageSize);
+    return {
+      results,
+      count,
+      totalPages,
+      page: query.page,
+      pageSize: query.pageSize,
+    }
   }
 }

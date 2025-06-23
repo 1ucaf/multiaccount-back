@@ -27,6 +27,8 @@ export class AccountsService {
 
   async getAccounts(query: GetAccountsQuery) {
     const {
+      pageSize = 10,
+      page = 0,
       isActive,
     } = query;
     const where: any = {};
@@ -37,13 +39,13 @@ export class AccountsService {
       otherWhereConditions: where,
     });
     const [results, count] = await this.accountsRepository.findAndCount(findQuery);
-    const totalPages = Math.ceil(count / query.pageSize);
+    const totalPages = Math.ceil(count / pageSize);
     return {
       results,
       count,
       totalPages,
-      page: query.page,
-      pageSize: query.pageSize,
+      page: page,
+      pageSize: pageSize,
     }
   }
   
@@ -57,5 +59,13 @@ export class AccountsService {
     return this.accountsRepository.findOne({
       where: { id }
     });
+  }
+
+  async pauseAccount(id: string) {
+    return await this.accountsRepository.update({ id }, { isActive: false });
+  }
+  
+  async resumeAccount(id: string) {
+    return await this.accountsRepository.update({ id }, { isActive: true });
   }
 }

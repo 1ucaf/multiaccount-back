@@ -88,4 +88,16 @@ export class AuthService {
 
     await this.usersService.updatePassword(user.id, hashedPassword);
   }
+
+  async impersonateAccount(id: string) {
+    const user = await this.usersService.getOwnerByAccountId(id);
+
+    return await this.impersonateUser(user.id);
+  }
+  async impersonateUser(id: string) {
+
+    const token = this.jwtService.sign({ id });
+
+    return { token };
+  }
 }
