@@ -50,11 +50,11 @@ export class UsersService {
   }
   async postUser(user: PostUserDTO) {
     const { account_id } = this.tenantContext.getContext();
-    const existingUserWithinAccount = await this.usersRepository.findOne({
-      where: { email: user.email, account_id }
+    const existingUser = await this.usersRepository.findOne({
+      where: { email: user.email }
     });
 
-    if (existingUserWithinAccount) {
+    if (existingUser) {
       throw new ConflictException('User with this email already exists');
     }
     const hashedPassword = await bcrypt.hash(user.password, 10);
