@@ -22,6 +22,7 @@ export const MasterUserPermissionsMap: Partial<Record<Permission, string>> = {
 
 export const AdminUserPermissionsMap: Partial<Record<Permission, string>> = {
   [Permission.USERS_GET]: 'See users',
+  [Permission.USERS_CREATE]: 'Create users',
   [Permission.USERS_EDIT]: 'Edit users',
   [Permission.USERS_DELETE]: 'Delete users',
   [Permission.USERS_SET_ADMIN]: 'Set admin',
