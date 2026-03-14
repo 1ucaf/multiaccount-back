@@ -68,4 +68,12 @@ export class AccountsService {
   async resumeAccount(id: string) {
     return await this.accountsRepository.update({ id }, { isActive: true });
   }
+
+  async suspendAccount(id: string) {
+    return await this.accountsRepository.update({ id }, { isSuspended: true });
+  }
+
+  async unsuspendAccount(id: string) {
+    return await this.accountsRepository.update({ id }, { isSuspended: false });
+  }
 }

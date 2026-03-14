@@ -31,4 +31,14 @@ export class AccountsController {
   async resumeAccount(@Param('id') id: string) {
     return this.accountsService.resumeAccount(id);
   }
+
+  @Patch('suspend/:id')
+  async suspendAccount(@Param('id') id: string) {
+    return this.accountsService.suspendAccount(id);
+  }
+
+  @Patch('unsuspend/:id')
+  async unsuspendAccount(@Param('id') id: string) {
+    return this.accountsService.unsuspendAccount(id);
+  }
 }
