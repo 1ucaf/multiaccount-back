@@ -17,6 +17,11 @@ export class AccountsController {
     return this.accountsService.getAccounts(query);
   }
 
+  @Get(':id')
+  async getById(@Param('id') id: string) {
+    return this.accountsService.getById(id);
+  }
+
   @Patch('pause/:id')
   async pauseAccount(@Param('id') id: string) {
     return this.accountsService.pauseAccount(id);

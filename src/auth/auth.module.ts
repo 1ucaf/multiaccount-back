@@ -7,6 +7,7 @@ import { JwtStrategy } from './jwt.strategy';
 import { UsersModule } from 'src/users/users.module';
 import { AccountsModule } from 'src/accounts/accounts.module';
 import { TenantContextService } from 'src/auth/tenancy/tenant-context.service';
+import { AccountStatusGuard } from './guards/account-status.guard';
 
 @Module({
   imports: [
@@ -22,8 +23,8 @@ import { TenantContextService } from 'src/auth/tenancy/tenant-context.service';
     UsersModule,
     AccountsModule,
   ],
-  providers: [AuthService, JwtStrategy, TenantContextService],
+  providers: [AuthService, JwtStrategy, TenantContextService, AccountStatusGuard],
   controllers: [AuthController],
-  exports: [JwtStrategy, PassportModule, TenantContextService]
+  exports: [JwtStrategy, PassportModule, TenantContextService, AccountStatusGuard]
 })
 export class AuthModule {}

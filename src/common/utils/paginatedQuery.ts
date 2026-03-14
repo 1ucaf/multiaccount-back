@@ -34,14 +34,35 @@ export const getPaginatedQuery = <TQuery extends CommonFiltersPaginated, TEntity
     where.date_created = dateConditions;
   }
 
-  // 2. Search filtering
+  // 2. Search filtering (accent-insensitive)
   if (search) {
-    where["$or"] = searchByArray.map((field) => ({ [field]: { $regex: search, $options: 'i' } }));
+    const accentMap: Record<string, string> = {
+      a: '[aá]', A: '[AÁ]',
+      e: '[eé]', E: '[EÉ]',
+      i: '[ií]', I: '[IÍ]',
+      o: '[oó]', O: '[OÓ]',
+      u: '[uú]', U: '[UÚ]',
+    };
+
+    const normalizedSearch = search
+      .split('')
+      .map(char => accentMap[char] || char)
+      .join('');
+    if (!where["$or"]) {
+      where["$or"] = [];
+    }
+    where["$or"] = [...where["$or"], ...searchByArray.map((field) => ({
+      [field]: { $regex: normalizedSearch, $options: 'i' }
+    }))];
   }
 
   // 3. Combine conditions with AND if both exist
   if (where.date_created && where["$or"]) {
+    if (!where["$and"]) {
+      where["$and"] = [];
+    }
     where["$and"] = [
+      ...where["$and"],
       { date_created: where.date_created },
       { $or: where["$or"] }
     ];

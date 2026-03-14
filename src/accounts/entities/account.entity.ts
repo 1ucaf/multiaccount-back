@@ -11,4 +11,7 @@ export class AccountEntity extends DomainEntity {
 
   @Column()
   isActive: boolean;
+
+  @Column({ default: false })
+  isSuspended: boolean;
 }
