@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './entities/user.entity';
 import { Repository } from 'typeorm';
@@ -108,13 +108,19 @@ export class UsersService {
       }
     );
   }
-  setAdmin(userId: string, body: IsAdminDTO) {
+  async setAdmin(userId: string, body: IsAdminDTO) {
     const { account_id } = this.tenantContext.getContext();
     const { isAdmin } = body;
+    const user = await this.usersRepository.findOne({ where: { id: userId, account_id } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    const newPermissions = isAdmin ? user.permissions : user.permissions.filter(p => RegularUserPermissionsKeys.includes(p));
     return this.usersRepository.update(
       { id: userId, account_id },
       {
         roles: isAdmin ? [Role.USER, Role.ADMIN] : [Role.USER],
+        permissions: newPermissions,
       }
     );
   }
@@ -139,8 +145,12 @@ export class UsersService {
       }
     );
   }
-  updatePassword(userId: string, password: string) {
+  async updatePassword(userId: string, password: string) {
     const { account_id } = this.tenantContext.getContext();
+    const user = await this.usersRepository.findOne({ where: { id: userId, account_id } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
     return this.usersRepository.update(
       { id: userId, account_id },
       {
@@ -182,5 +192,25 @@ export class UsersService {
       page: query.page,
       pageSize: query.pageSize,
     }
+  }
+
+  async userForgotPassword(userId: string, newPassword: string) {
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const { account_id, user } = this.tenantContext.getContext();
+    const userToUpdate = await this.usersRepository.findOne({ where: { id: userId } });
+    if (!userToUpdate) {
+      throw new NotFoundException('User not found');
+    }
+    if(!user.roles.includes(Role.MASTER) && userToUpdate.account_id !== account_id) {
+      throw new NotFoundException('User not found');
+    }
+    await this.usersRepository.update(
+      { id: userId },
+      {
+        password: hashedPassword,
+        isActive: true,
+      }
+    );
+    return { message: 'Password changed successfully' };
   }
 }

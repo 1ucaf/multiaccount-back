@@ -12,6 +12,7 @@ import { Permission } from 'src/permissions/dictionary/permissions.dictionary';
 import { PermissionsGuard } from 'src/auth/guards/permissions.guard';
 import { IsAdminDTO } from './dto/IsAdmin.dto';
 import { PostUserDTO } from './dto/postUser.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 
 @Controller('users')
 @UseGuards(AuthGuard(), RolesGuard, PermissionsGuard)
@@ -56,5 +57,10 @@ export class UsersController {
   @Roles(Role.MASTER)
   getAccountUsers(@Query() query: GetUsersQuery, @Param('id') id: string) {
     return this.usersService.getAccountUsers(query, id);
+  }
+  @Patch('/forgot-password/:id')
+  @Roles(Role.OWNER, Role.MASTER)
+  userForgotPassword(@Body() body: ForgotPasswordDto, @Param('id') id: string) {
+    return this.usersService.userForgotPassword(id, body.password);
   }
 }
